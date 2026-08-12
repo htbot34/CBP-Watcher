@@ -17,6 +17,7 @@ SETUP
 4. Run it:
      - Locally, left running:      python global_entry_watcher.py
      - Locally, one check + exit:  python global_entry_watcher.py --once
+     - Check alerts reach you:     python global_entry_watcher.py --test-email
      - In the cloud (no computer needed): see the included GitHub Actions
        workflow, ge_watcher.yml.
 """
@@ -119,6 +120,19 @@ def notify(title, message):
     send_ntfy(title, message)
 
 
+def send_test_email():
+    """Prove the alert path works now, rather than when a slot is vanishing."""
+    if not (SMTP_USER and SMTP_PASS):
+        sys.exit("SMTP_USER/SMTP_PASS not set — there is nothing to test.")
+    print(f"Sending test alert from {SMTP_USER} to {EMAIL_TO} ...")
+    notify(
+        "Global Entry watcher test",
+        "Test alert. If you're reading this, the watcher can reach you — "
+        "a real opening will look like this.",
+    )
+    print("Sent. If it doesn't arrive within a minute, check your spam folder.")
+
+
 def load_state():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE) as f:
@@ -156,7 +170,9 @@ def run_once():
 
 
 if __name__ == "__main__":
-    if "--once" in sys.argv:
+    if "--test-email" in sys.argv:
+        send_test_email()
+    elif "--once" in sys.argv:
         run_once()
     else:
         while True:

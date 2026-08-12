@@ -3,7 +3,12 @@ name: Global Entry Watcher
 on:
   schedule:
     - cron: "*/15 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      test_email:
+        description: "Send a test email instead of checking for openings"
+        type: boolean
+        default: false
 
 jobs:
   check:
@@ -20,7 +25,9 @@ jobs:
 
       - name: Check for openings
         env:
-          SMTP_USER: ${{ secrets.SMTP_USER }}
+          # Sender is the same address the alerts go to, which is already in
+          # this repo — only the app password needs to be a secret.
+          SMTP_USER: henrylachtur@gmail.com
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           EMAIL_TO: henrylachtur@gmail.com
-        run: python3 global_entry_watcher.py --once
+        run: python3 global_entry_watcher.py ${{ inputs.test_email && '--test-email' || '--once' }}

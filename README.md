@@ -22,10 +22,18 @@ books anything for you.
 1. Confirm this repo is public (public keeps Actions minutes free at this
    frequency): repo Settings → General → Danger Zone → Change visibility.
 2. In the repo: Settings → Secrets and variables → Actions → New repository secret
-   - `SMTP_USER` = the sending Gmail address
    - `SMTP_PASS` = the app password from above
+
+   That's the only secret needed. The sending address is set as `SMTP_USER`
+   directly in `ge_watcher.yml`, since it's the same address the alerts go
+   to and is already visible in this repo — only the app password is worth
+   protecting.
 3. GitHub will run the check every 15 minutes automatically. You can also
    trigger it manually from the Actions tab ("Run workflow").
+4. Confirm alerts actually reach you, once: Actions tab → Run workflow →
+   tick **Send a test email** → Run. An email should arrive within a
+   minute. Do this now rather than finding out the app password is wrong
+   at the moment a slot appears.
 
 ## Run locally instead
 
@@ -33,6 +41,12 @@ books anything for you.
 export SMTP_USER="your.address@gmail.com"
 export SMTP_PASS="your16charapppassword"
 python3 global_entry_watcher.py
+```
+
+To check the email path works before relying on it:
+
+```
+python3 global_entry_watcher.py --test-email
 ```
 
 ## Notes
