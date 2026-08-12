@@ -13,6 +13,10 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # A single check takes seconds. This is a backstop: if the script ever
+    # ends up in its local polling loop here, the job dies in 5 minutes
+    # instead of burning the runner's 6-hour default.
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
