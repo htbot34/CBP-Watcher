@@ -36,8 +36,11 @@ CHECK_INTERVAL_MINUTES = 15  # only used when left running locally
 STATE_FILE = "ge_watcher_state.json"
 
 # Email (primary alert channel) — read from environment, never hardcoded.
-SMTP_USER = os.environ.get("SMTP_USER")  # the Gmail address that sends the alert
-SMTP_PASS = os.environ.get("SMTP_PASS")  # a Gmail App Password, not your login password
+SMTP_USER = (os.environ.get("SMTP_USER") or "").strip()  # Gmail address that sends
+# A Gmail App Password, not your login password. Google shows it as four
+# space-separated groups ("abcd efgh ijkl mnop") — that spacing is display
+# formatting only and Gmail rejects it, so strip all whitespace.
+SMTP_PASS = "".join((os.environ.get("SMTP_PASS") or "").split())
 EMAIL_TO = os.environ.get("EMAIL_TO", "henrylachtur@gmail.com")
 
 # Optional bonus push channel — leave blank to disable.
@@ -125,11 +128,20 @@ def send_test_email():
     if not (SMTP_USER and SMTP_PASS):
         sys.exit("SMTP_USER/SMTP_PASS not set — there is nothing to test.")
     print(f"Sending test alert from {SMTP_USER} to {EMAIL_TO} ...")
-    notify(
-        "Global Entry watcher test",
-        "Test alert. If you're reading this, the watcher can reach you — "
-        "a real opening will look like this.",
-    )
+    try:
+        notify(
+            "Global Entry watcher test",
+            "Test alert. If you're reading this, the watcher can reach you — "
+            "a real opening will look like this.",
+        )
+    except smtplib.SMTPAuthenticationError as e:
+        sys.exit(
+            f"Gmail rejected the credentials ({e.smtp_code}).\n"
+            f"SMTP_PASS is {len(SMTP_PASS)} characters; a Gmail App Password is 16.\n"
+            "Generate one at myaccount.google.com/apppasswords (2-Step Verification\n"
+            "must be on first), and make sure it belongs to the account in\n"
+            f"SMTP_USER ({SMTP_USER}). Your normal Google password will not work."
+        )
     print("Sent. If it doesn't arrive within a minute, check your spam folder.")
 
 

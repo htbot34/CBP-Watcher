@@ -16,7 +16,10 @@ books anything for you.
 2. Go to myaccount.google.com/apppasswords
 3. Create an app password (any name is fine, e.g. "GE Watcher").
 4. Copy the 16-character password — you'll paste it into a GitHub secret,
-   never into the code itself.
+   never into the code itself. Google shows it as four groups of four
+   (`abcd efgh ijkl mnop`); the spaces are display formatting only. The
+   script strips them for you, but your normal Google account password
+   will never work here — it has to be an App Password.
 
 ## Deploy to GitHub Actions (recommended — runs in the cloud, no computer needed)
 1. Confirm this repo is public (public keeps Actions minutes free at this
