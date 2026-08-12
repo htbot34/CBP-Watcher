@@ -42,7 +42,13 @@ EMAIL_TO = os.environ.get("EMAIL_TO", "henrylachtur@gmail.com")
 # Optional bonus push channel — leave blank to disable.
 NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "")
 
-LOCATIONS_URL = "https://ttp.cbp.dhs.gov/schedulerapi/slots/asLocations"
+# The full enrollment-center directory. Note: do NOT use /slots/asLocations here —
+# it only returns centers that currently have open slots, so a center with no
+# availability drops out of the list entirely and can never be resolved.
+LOCATIONS_URL = (
+    "https://ttp.cbp.dhs.gov/schedulerapi/locations/"
+    "?temporary=false&inviteOnly=false&operational=true&serviceName=Global%20Entry"
+)
 SLOTS_URL = (
     "https://ttp.cbp.dhs.gov/schedulerapi/slots"
     "?orderBy=soonest&limit=1&locationId={}&minimum=1"
@@ -58,11 +64,17 @@ def fetch_json(url):
 def resolve_location_ids(city_names):
     """Match your city names against CBP's live location list."""
     all_locations = fetch_json(LOCATIONS_URL)
+    print(f"Fetched {len(all_locations)} enrollment centers from CBP.")
     resolved = {}
     for city in city_names:
         for loc in all_locations:
-            if city.lower() in loc["name"].lower() or city.lower() in loc.get("city", "").lower():
-                resolved[loc["id"]] = f'{loc["name"]} ({loc["city"]}, {loc["state"]})'
+            # Fields can come back null, so coerce before comparing.
+            name = loc.get("name") or ""
+            loc_city = loc.get("city") or ""
+            loc_state = loc.get("state") or "?"
+            if city.lower() in name.lower() or city.lower() in loc_city.lower():
+                resolved[loc["id"]] = f"{name} ({loc_city}, {loc_state})"
+    print(f"Matched {len(resolved)} center(s) for {city_names}: {sorted(resolved.values())}")
     return resolved
 
 
