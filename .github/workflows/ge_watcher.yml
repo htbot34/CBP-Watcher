@@ -33,5 +33,5 @@ jobs:
           # this repo — only the app password needs to be a secret.
           SMTP_USER: henrylachtur@gmail.com
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          EMAIL_TO: henrylachtur@gmail.com
+          EMAIL_TO: rtturcotte@gmail.com
         run: python3 global_entry_watcher.py ${{ inputs.test_email && '--test-email' || '--once' }}
